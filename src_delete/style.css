@@ -1,0 +1,130 @@
+body {
+    overflow: hidden;
+    margin: 0px;
+    padding: 0px;
+    background: white;
+    width: 280px;
+}
+
+h1 {
+    text-align: center;
+}
+
+table {
+    margin: 10px auto;
+}
+
+td {
+    width: 100px;
+    max-width: 100px;
+}
+
+tr td:first-child {
+    text-align: right;
+}
+
+tr td:last-child {
+    text-align: center;
+}
+
+footer {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	padding: 5px 0px;
+    background-color: #dfe1e5;
+    text-align: center;
+}
+
+footer a {
+	color: #0f0f0f;
+	text-decoration: none;
+	outline: none;
+}
+
+/* The switch - the box around the slider */
+
+input[type="range"] {
+    width: 90px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 17px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 13px;
+    width: 13px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: #2196F3;
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked+.slider:before {
+    -webkit-transform: translateX(13px);
+    -ms-transform: translateX(13px);
+    transform: translateX(13px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 17px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+button {
+    margin: 10px 10px;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 10px 10px;
+    text-align: center;
+    display: inline-block;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    text-decoration: none;
+    outline: none;
+    cursor: pointer;
+    width: 60px;
+}

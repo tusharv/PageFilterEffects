@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <title>Set Page Color Popup</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <h1>Page Filter Effects</h1>
+  <table>
+    <tr>
+      <td>Blur</td>
+      <td>
+        <input type="range" min="0" max="10" value="0" name="blur">
+      </td>
+    </tr>
+    <tr>
+      <td>Brightness</td>
+      <td>
+        <input type="range" min="0" max="10" value="1" name="brightness">
+      </td>
+    </tr>
+    <tr>
+      <td>Contrast</td>
+      <td>
+        <input type="range" min="0" max="10" value="1" name="contrast">
+      </td>
+    </tr>
+    <tr>
+      <td>Hue Rotate</td>
+      <td>
+        <input type="range" min="0" max="180" value="0" name="hue-rotate">
+      </td>
+    </tr>
+    <tr>
+      <td>Saturate</td>
+      <td>
+        <input type="range" min="0" max="400" value="100" name="saturate">
+      </td>
+    </tr>
+    <tr>
+      <td>Grayscale</td>
+      <td>
+        <label class="switch">
+          <input type="checkbox" name="grayscale">
+          <span class="slider round"></span>
+        </label>
+      </td>
+    </tr>
+    <tr>
+      <td>Sepia</td>
+      <td>
+        <label class="switch">
+          <input type="checkbox" name="sepia">
+          <span class="slider round"></span>
+        </label>
+      </td>
+    </tr>
+    <tr>
+      <td>Invert</td>
+      <td>
+        <label class="switch">
+          <input type="checkbox" name="invert">
+          <span class="slider round"></span>
+        </label>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <button id="reset">Reset</button>
+      </td>
+    </tr>
+  </table>
+
+  <br>
+  <footer>
+		<a href="mailto:tusharvaghela@gmail.com?subject=Page Filter Effects v1.3" target="_blank">For Feedback | Suggestions | Contribution</a>
+	</footer>
+
+    <script src="popup.js"></script>
+</body>
+</html>
