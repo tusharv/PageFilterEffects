@@ -41,7 +41,7 @@ function isDefault(name, value){
 	}
 }
 
-function applyStyle(event=null){
+async function applyStyle(event=null){
 	let config = "";
 	document.querySelectorAll('input').forEach((e)=>{
 		let {name, value} = e;
@@ -51,11 +51,34 @@ function applyStyle(event=null){
 			config += `${name}(${e.checked?'1':'0'}) `;
 		}
 	});
-	chrome.tabs.executeScript(null,{code:"document.body.style.transition='filter 3s ease-out';document.body.style.filter='" + config + "'"});
+	
+	try {
+		const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+		await chrome.scripting.executeScript({
+			target: {tabId: tab.id},
+			func: (filterConfig) => {
+				document.body.style.transition = 'filter 3s ease-out';
+				document.body.style.filter = filterConfig;
+			},
+			args: [config]
+		});
+	} catch (error) {
+		console.error('Error applying style:', error);
+	}
 }
 
-function resetStyle(){
-	chrome.tabs.executeScript(null,{code:"document.body.style.filter='none'"});
+async function resetStyle(){
+	try {
+		const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+		await chrome.scripting.executeScript({
+			target: {tabId: tab.id},
+			func: () => {
+				document.body.style.filter = 'none';
+			}
+		});
+	} catch (error) {
+		console.error('Error resetting style:', error);
+	}
 
 	document.querySelectorAll('input').forEach((e)=>{
 		let {name, value} = e;
@@ -82,14 +105,14 @@ function resetStyle(){
 }
 
 
-function buttonClick(e){
+async function buttonClick(e){
 	console.log(`buttonClick called with `,e);
 	switch(e.target.id){
 		case 'apply':
-			applyStyle();
+			await applyStyle();
 			break;
 		case 'reset':
-			resetStyle();
+			await resetStyle();
 			break;
 		default:
 			break;
