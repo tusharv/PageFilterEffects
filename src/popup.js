@@ -120,15 +120,55 @@ async function buttonClick(e){
 }
 
 
+// Update value displays in real-time
+function updateValueDisplay(input) {
+	const name = input.name;
+	const value = input.value;
+	const valueDisplay = document.getElementById(`${name}-value`);
+	
+	if (valueDisplay) {
+		switch(name) {
+			case 'blur':
+				valueDisplay.textContent = `${value}px`;
+				break;
+			case 'brightness':
+			case 'contrast':
+				valueDisplay.textContent = parseFloat(value).toFixed(1);
+				break;
+			case 'hue-rotate':
+				valueDisplay.textContent = `${value}°`;
+				break;
+			case 'saturate':
+				valueDisplay.textContent = `${value}%`;
+				break;
+		}
+	}
+}
+
+// Initialize value displays
+function initializeValueDisplays() {
+	document.querySelectorAll('input[type="range"]').forEach(input => {
+		updateValueDisplay(input);
+	});
+}
+
 document.addEventListener('DOMContentLoaded', function(){
+	// Initialize value displays
+	initializeValueDisplays();
+	
+	// Button event listeners
 	var buttons = document.querySelectorAll('button');
 	buttons.forEach((b)=>{
 		b.addEventListener('click', buttonClick);
 	});
 
+	// Input event listeners
 	var inputs = document.querySelectorAll('input');
 	inputs.forEach((i)=>{
 		i.addEventListener('change', applyStyle);
+		i.addEventListener('input', function() {
+			updateValueDisplay(this);
+			applyStyle();
+		});
 	});
-
 })
