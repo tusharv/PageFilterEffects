@@ -16,6 +16,25 @@ const STORAGE_KEYS = {
 	CURRENT_URL: 'currentUrl'
 };
 
+// Get current domain for domain-specific storage
+async function getCurrentDomain() {
+	try {
+		const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+		if (!tab || !tab.url) return null;
+		
+		const url = new URL(tab.url);
+		return url.hostname;
+	} catch (error) {
+		console.error('Popup: Error getting domain:', error);
+		return null;
+	}
+}
+
+// Get domain-specific storage key
+function getDomainStorageKey(domain) {
+	return `pageFilterValues_${domain}`;
+}
+
 // Fallback storage using localStorage
 function getFallbackStorage() {
 	try {
@@ -164,14 +183,21 @@ async function updateWebsiteName() {
 }
 
 // Save filter values to storage
-function saveFilterValues() {
+async function saveFilterValues() {
 	try {
+		const currentDomain = await getCurrentDomain();
+		if (!currentDomain) {
+			console.warn('Popup: Could not determine domain, cannot save filter values');
+			return;
+		}
+		
 		const filterValues = {};
+		const domainStorageKey = getDomainStorageKey(currentDomain);
 		
 		// Check if chrome.storage is available
 		if (!chrome || !chrome.storage || !chrome.storage.local) {
 			console.warn('Chrome storage not available, using fallback storage');
-			saveToFallbackStorage(STORAGE_KEYS.FILTER_VALUES, filterValues);
+			saveToFallbackStorage(domainStorageKey, filterValues);
 			return;
 		}
 		
@@ -184,15 +210,15 @@ function saveFilterValues() {
 			}
 		});
 		
-		console.log('Popup: Saving filter values:', filterValues);
+		console.log(`Popup: Saving filter values for domain ${currentDomain}:`, filterValues);
 		
-		chrome.storage.local.set({ [STORAGE_KEYS.FILTER_VALUES]: filterValues }, () => {
+		chrome.storage.local.set({ [domainStorageKey]: filterValues }, () => {
 			if (chrome.runtime.lastError) {
 				console.error('Error saving to chrome storage:', chrome.runtime.lastError);
 				// Fallback to localStorage
-				saveToFallbackStorage(STORAGE_KEYS.FILTER_VALUES, filterValues);
+				saveToFallbackStorage(domainStorageKey, filterValues);
 			} else {
-				console.log('Filter values saved to chrome storage');
+				console.log(`Filter values saved to chrome storage for domain ${currentDomain}`);
 			}
 		});
 	} catch (error) {
@@ -204,10 +230,18 @@ function saveFilterValues() {
 // Load filter values from storage
 async function loadFilterValues() {
 	try {
+		const currentDomain = await getCurrentDomain();
+		if (!currentDomain) {
+			console.warn('Popup: Could not determine domain, cannot load filter values');
+			return;
+		}
+		
+		const domainStorageKey = getDomainStorageKey(currentDomain);
+		
 		// Check if chrome.storage is available
 		if (!chrome || !chrome.storage || !chrome.storage.local) {
 			console.warn('Chrome storage not available, using fallback storage');
-			const fallbackValues = loadFromFallbackStorage(STORAGE_KEYS.FILTER_VALUES);
+			const fallbackValues = loadFromFallbackStorage(domainStorageKey);
 			if (fallbackValues) {
 				getInputs().forEach(input => {
 					const { name, type } = input;
@@ -220,7 +254,7 @@ async function loadFilterValues() {
 						}
 					}
 				});
-				console.log('Filter values loaded from fallback storage');
+				console.log(`Filter values loaded from fallback storage for domain ${currentDomain}`);
 				
 				// Apply the loaded values to the page if they're not default values
 				setTimeout(() => {
@@ -230,16 +264,16 @@ async function loadFilterValues() {
 			return;
 		}
 		
-		const result = await chrome.storage.local.get([STORAGE_KEYS.FILTER_VALUES]);
-		let savedValues = result[STORAGE_KEYS.FILTER_VALUES] || {};
-		console.log('Popup: Loaded from chrome storage:', savedValues);
+		const result = await chrome.storage.local.get([domainStorageKey]);
+		let savedValues = result[domainStorageKey] || {};
+		console.log(`Popup: Loaded from chrome storage for domain ${currentDomain}:`, savedValues);
 		
 		// If chrome storage failed, try fallback storage
 		if (!savedValues || Object.keys(savedValues).length === 0) {
-			const fallbackValues = loadFromFallbackStorage(STORAGE_KEYS.FILTER_VALUES);
+			const fallbackValues = loadFromFallbackStorage(domainStorageKey);
 			if (fallbackValues) {
 				savedValues = fallbackValues;
-				console.log('Popup: Loaded values from fallback storage:', fallbackValues);
+				console.log(`Popup: Loaded values from fallback storage for domain ${currentDomain}:`, fallbackValues);
 			}
 		}
 		
@@ -255,7 +289,7 @@ async function loadFilterValues() {
 			}
 		});
 		
-		console.log('Filter values loaded from storage');
+		console.log(`Filter values loaded from storage for domain ${currentDomain}`);
 		
 		// Apply the loaded values to the page if they're not default values
 		setTimeout(() => {
@@ -462,27 +496,32 @@ async function resetStyle() {
 		
 		console.log('Input values reset successfully');
 		
-		// Clear saved filter values
-		if (chrome && chrome.storage && chrome.storage.local) {
-			chrome.storage.local.remove([STORAGE_KEYS.FILTER_VALUES], () => {
-				if (chrome.runtime.lastError) {
-					console.error('Error clearing chrome storage:', chrome.runtime.lastError);
-				} else {
-					console.log('Chrome storage cleared successfully');
+		// Clear saved filter values for current domain
+		const currentDomain = await getCurrentDomain();
+		if (currentDomain) {
+			const domainStorageKey = getDomainStorageKey(currentDomain);
+			
+			if (chrome && chrome.storage && chrome.storage.local) {
+				chrome.storage.local.remove([domainStorageKey], () => {
+					if (chrome.runtime.lastError) {
+						console.error('Error clearing chrome storage:', chrome.runtime.lastError);
+					} else {
+						console.log(`Chrome storage cleared successfully for domain ${currentDomain}`);
+					}
+				});
+			} else {
+				console.warn('Chrome storage not available, skipping clear');
+			}
+			
+			// Also clear fallback storage
+			const fallbackStorage = getFallbackStorage();
+			if (fallbackStorage) {
+				try {
+					fallbackStorage.removeItem(domainStorageKey);
+					console.log(`Fallback storage cleared successfully for domain ${currentDomain}`);
+				} catch (error) {
+					console.error('Error clearing fallback storage:', error);
 				}
-			});
-		} else {
-			console.warn('Chrome storage not available, skipping clear');
-		}
-		
-		// Also clear fallback storage
-		const fallbackStorage = getFallbackStorage();
-		if (fallbackStorage) {
-			try {
-				fallbackStorage.removeItem(STORAGE_KEYS.FILTER_VALUES);
-				console.log('Fallback storage cleared successfully');
-			} catch (error) {
-				console.error('Error clearing fallback storage:', error);
 			}
 		}
 		

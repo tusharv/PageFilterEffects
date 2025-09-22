@@ -18,6 +18,21 @@
 
 	// Storage key (must match popup.js)
 	const STORAGE_KEY = 'pageFilterValues';
+	
+	// Get current domain for domain-specific storage
+	function getCurrentDomain() {
+		try {
+			return window.location.hostname;
+		} catch (error) {
+			console.error('Page Filter Effects: Error getting domain:', error);
+			return null;
+		}
+	}
+	
+	// Get domain-specific storage key
+	function getDomainStorageKey(domain) {
+		return `pageFilterValues_${domain}`;
+	}
 
 	// Check if we're on a restricted page
 	function isRestrictedPage() {
@@ -267,12 +282,24 @@
 			}, 300);
 		}
 
-		// Clear storage
-		if (chrome && chrome.storage && chrome.storage.local) {
-			chrome.storage.local.remove([STORAGE_KEY]);
+		// Clear domain-specific storage
+		const currentDomain = getCurrentDomain();
+		if (currentDomain) {
+			const domainStorageKey = getDomainStorageKey(currentDomain);
+			
+			if (chrome && chrome.storage && chrome.storage.local) {
+				chrome.storage.local.remove([domainStorageKey]);
+			}
+			
+			// Also clear from localStorage fallback
+			try {
+				localStorage.removeItem(domainStorageKey);
+			} catch (error) {
+				console.error('Page Filter Effects: Error clearing localStorage:', error);
+			}
 		}
 
-		console.log('Page Filter Effects: Filters reset');
+		console.log(`Page Filter Effects: Filters reset for domain ${currentDomain}`);
 	}
 
 	// Load and apply saved filters
@@ -281,36 +308,43 @@
 			return;
 		}
 
+		const currentDomain = getCurrentDomain();
+		if (!currentDomain) {
+			console.log('Page Filter Effects: Could not determine domain, skipping filter application');
+			return;
+		}
+
 		try {
 			let filterValues = null;
+			const domainStorageKey = getDomainStorageKey(currentDomain);
 
 			// Try chrome storage first
 			if (chrome && chrome.storage && chrome.storage.local) {
-				const result = await chrome.storage.local.get([STORAGE_KEY]);
-				filterValues = result[STORAGE_KEY];
-				console.log('Page Filter Effects: Loaded from chrome storage:', filterValues);
+				const result = await chrome.storage.local.get([domainStorageKey]);
+				filterValues = result[domainStorageKey];
+				console.log(`Page Filter Effects: Loaded from chrome storage for domain ${currentDomain}:`, filterValues);
 			}
 
 			// Fallback to localStorage
 			if (!filterValues) {
 				try {
-					const stored = localStorage.getItem(STORAGE_KEY);
+					const stored = localStorage.getItem(domainStorageKey);
 					filterValues = stored ? JSON.parse(stored) : null;
-					console.log('Page Filter Effects: Loaded from localStorage:', filterValues);
+					console.log(`Page Filter Effects: Loaded from localStorage for domain ${currentDomain}:`, filterValues);
 				} catch (error) {
 					console.error('Page Filter Effects: Error reading from localStorage:', error);
 				}
 			}
 
 			if (filterValues && Object.keys(filterValues).length > 0) {
-				console.log('Page Filter Effects: Applying filters:', filterValues);
+				console.log(`Page Filter Effects: Applying filters for domain ${currentDomain}:`, filterValues);
 				const applied = applyFilters(filterValues);
 				if (applied) {
 					// Show notification banner
 					createNotificationBanner();
 				}
 			} else {
-				console.log('Page Filter Effects: No saved filter values found');
+				console.log(`Page Filter Effects: No saved filter values found for domain ${currentDomain}`);
 			}
 		} catch (error) {
 			console.error('Page Filter Effects: Error loading filters:', error);
@@ -327,22 +361,29 @@
 	// Listen for storage changes to update filters in real-time
 	if (chrome && chrome.storage && chrome.storage.onChanged) {
 		chrome.storage.onChanged.addListener((changes, namespace) => {
-			if (namespace === 'local' && changes[STORAGE_KEY]) {
-				const newValues = changes[STORAGE_KEY].newValue;
-				if (newValues) {
-					const applied = applyFilters(newValues);
-					if (applied) {
-						createNotificationBanner();
-					} else {
-						// No filters to apply, remove notification
-						const notification = document.getElementById('page-filter-effects-notification');
-						if (notification) {
-							notification.remove();
+			if (namespace === 'local') {
+				const currentDomain = getCurrentDomain();
+				if (!currentDomain) return;
+				
+				const domainStorageKey = getDomainStorageKey(currentDomain);
+				
+				if (changes[domainStorageKey]) {
+					const newValues = changes[domainStorageKey].newValue;
+					if (newValues) {
+						const applied = applyFilters(newValues);
+						if (applied) {
+							createNotificationBanner();
+						} else {
+							// No filters to apply, remove notification
+							const notification = document.getElementById('page-filter-effects-notification');
+							if (notification) {
+								notification.remove();
+							}
 						}
+					} else {
+						// Storage cleared, reset filters
+						resetFilters();
 					}
-				} else {
-					// Storage cleared, reset filters
-					resetFilters();
 				}
 			}
 		});
