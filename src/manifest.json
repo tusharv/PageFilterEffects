@@ -9,17 +9,36 @@
   "manifest_version": 3,
   "name": "Page Filter Effects",
   "short_name": "PFE",
-  "permissions": [],
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "storage"
+  ],
   "update_url": "https://clients2.google.com/service/update2/crx",
-  "version": "1.3",
+  "version": "2.1",
   "action": {
     "default_icon": "icon.png",
     "default_popup": "popup.html",
     "default_title": "Set this page's color effect"
   },
-  "content_security_policy": {},
   "host_permissions": [
     "http://*/*",
     "https://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icon128.png"],
+      "matches": ["<all_urls>"]
+    }
   ]
 }

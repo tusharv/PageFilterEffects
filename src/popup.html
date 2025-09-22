@@ -1,82 +1,95 @@
 <!doctype html>
 <html>
 <head>
-  <title>Set Page Color Popup</title>
+  <title>Page Filter Effects</title>
   <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
-  <h1>Page Filter Effects</h1>
-  <table>
-    <tr>
-      <td>Blur</td>
-      <td>
-        <input type="range" min="0" max="10" value="0" name="blur">
-      </td>
-    </tr>
-    <tr>
-      <td>Brightness</td>
-      <td>
-        <input type="range" min="0" max="10" value="1" name="brightness">
-      </td>
-    </tr>
-    <tr>
-      <td>Contrast</td>
-      <td>
-        <input type="range" min="0" max="10" value="1" name="contrast">
-      </td>
-    </tr>
-    <tr>
-      <td>Hue Rotate</td>
-      <td>
-        <input type="range" min="0" max="180" value="0" name="hue-rotate">
-      </td>
-    </tr>
-    <tr>
-      <td>Saturate</td>
-      <td>
-        <input type="range" min="0" max="400" value="100" name="saturate">
-      </td>
-    </tr>
-    <tr>
-      <td>Grayscale</td>
-      <td>
-        <label class="switch">
-          <input type="checkbox" name="grayscale">
-          <span class="slider round"></span>
-        </label>
-      </td>
-    </tr>
-    <tr>
-      <td>Sepia</td>
-      <td>
-        <label class="switch">
-          <input type="checkbox" name="sepia">
-          <span class="slider round"></span>
-        </label>
-      </td>
-    </tr>
-    <tr>
-      <td>Invert</td>
-      <td>
-        <label class="switch">
-          <input type="checkbox" name="invert">
-          <span class="slider round"></span>
-        </label>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2">
-        <button id="reset">Reset</button>
-      </td>
-    </tr>
-  </table>
+  <div class="container">
+    <header>
+      <h1>🎨 Page Filter Effects</h1>
+      <div id="website-name" class="website-name">Loading...</div>
+    </header>
 
-  <br>
-  <footer>
-		<a href="mailto:tusharvaghela@gmail.com?subject=Page Filter Effects v1.3" target="_blank">For Feedback | Suggestions | Contribution</a>
-	</footer>
+    <main>
+      <!-- Range Controls -->
+      <section class="controls-section">
+        <div class="control-group">
+          <label for="blur">Blur</label>
+          <div class="range-container">
+            <input type="range" id="blur" min="0" max="10" value="0" name="blur">
+            <span class="value-display" id="blur-value">0px</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="brightness">Brightness</label>
+          <div class="range-container">
+            <input type="range" id="brightness" min="0" max="10" step="0.1" value="1" name="brightness">
+            <span class="value-display" id="brightness-value">1.0</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="contrast">Contrast</label>
+          <div class="range-container">
+            <input type="range" id="contrast" min="0" max="10" step="0.1" value="1" name="contrast">
+            <span class="value-display" id="contrast-value">1.0</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="hue-rotate">Hue</label>
+          <div class="range-container">
+            <input type="range" id="hue-rotate" min="0" max="180" value="0" name="hue-rotate">
+            <span class="value-display" id="hue-rotate-value">0°</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="saturate">Saturate</label>
+          <div class="range-container">
+            <input type="range" id="saturate" min="0" max="400" value="100" name="saturate">
+            <span class="value-display" id="saturate-value">100%</span>
+          </div>
+        </div>
+      </section>
 
-    <script src="popup.js"></script>
+      <!-- Toggle Controls -->
+      <section class="toggles-section">
+        <div class="toggle-group">
+          <label class="toggle-label">
+            <input type="checkbox" name="grayscale">
+            <span class="toggle-slider"></span>
+            <span class="toggle-text">Grayscale</span>
+          </label>
+        </div>
+        <div class="toggle-group">
+          <label class="toggle-label">
+            <input type="checkbox" name="sepia">
+            <span class="toggle-slider"></span>
+            <span class="toggle-text">Sepia</span>
+          </label>
+        </div>
+        <div class="toggle-group">
+          <label class="toggle-label">
+            <input type="checkbox" name="invert">
+            <span class="toggle-slider"></span>
+            <span class="toggle-text">Invert</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Action Buttons -->
+      <section class="actions-section">
+        <button id="reset" class="btn btn-secondary">Reset</button>
+      </section>
+    </main>
+
+    <footer>
+      <a href="mailto:tusharvaghela@gmail.com?subject=Page Filter Effects v2.0" target="_blank">💬 Feedback</a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
 </body>
 </html>
