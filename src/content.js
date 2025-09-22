@@ -49,32 +49,41 @@
 		return parseFloat(value) === config.defaultValue;
 	}
 
-	// Create a filter container
-	function createFilterContainer() {
-		// Remove existing filter container if any
-		const existingContainer = document.getElementById('page-filter-effects-container');
-		if (existingContainer) {
-			existingContainer.remove();
+	// Apply filters directly to body without DOM manipulation
+	function applyFiltersToBody(filterString) {
+		// Apply filter directly to body
+		document.body.style.filter = filterString;
+		document.body.style.transition = 'filter 0.3s ease-out';
+		console.log('Page Filter Effects: Applied filter to body:', filterString);
+		
+		// Update extension icon badge to show effects are active
+		updateExtensionBadge(true);
+	}
+
+	// Remove filters from body
+	function removeFiltersFromBody() {
+		document.body.style.filter = '';
+		document.body.style.transition = '';
+		console.log('Page Filter Effects: Removed filters from body');
+		
+		// Update extension icon badge to show effects are inactive
+		updateExtensionBadge(false);
+	}
+
+	// Update extension icon badge to show filter status
+	function updateExtensionBadge(isActive) {
+		if (chrome && chrome.runtime && chrome.runtime.sendMessage) {
+			chrome.runtime.sendMessage({
+				action: 'updateBadge',
+				isActive: isActive
+			}, (response) => {
+				if (chrome.runtime.lastError) {
+					console.log('Page Filter Effects: Could not update badge:', chrome.runtime.lastError.message);
+				} else {
+					console.log('Page Filter Effects: Badge updated successfully');
+				}
+			});
 		}
-
-		// Create a container that will hold all page content
-		const filterContainer = document.createElement('div');
-		filterContainer.id = 'page-filter-effects-container';
-		filterContainer.style.cssText = `
-			position: relative;
-			min-height: 100vh;
-			transition: filter 0.3s ease-out;
-		`;
-
-		// Move all body children to the container
-		while (document.body.firstChild) {
-			filterContainer.appendChild(document.body.firstChild);
-		}
-
-		// Add the container to body
-		document.body.appendChild(filterContainer);
-
-		return filterContainer;
 	}
 
 	// Apply filters to the page
@@ -99,14 +108,8 @@
 
 		const filterConfig = configParts.join(' ');
 		
-		// Create or get the filter container
-		let filterContainer = document.getElementById('page-filter-effects-container');
-		if (!filterContainer) {
-			filterContainer = createFilterContainer();
-		}
-
-		// Apply filter to container instead of body
-		filterContainer.style.filter = filterConfig;
+		// Apply filters directly to body
+		applyFiltersToBody(filterConfig);
 		
 		console.log('Page Filter Effects: Applied filters:', filterConfig);
 		return true;
@@ -133,7 +136,7 @@
 				border: 1px solid rgba(102, 126, 234, 0.15);
 				border-radius: 8px;
 				padding: 8px 12px;
-				z-index: 10000;
+				z-index: 2147483647;
 				box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 				font-size: 12px;
@@ -248,12 +251,8 @@
 
 	// Reset filters
 	function resetFilters() {
-		// Reset filter container
-		const filterContainer = document.getElementById('page-filter-effects-container');
-		if (filterContainer) {
-			filterContainer.style.filter = 'none';
-			filterContainer.style.transition = 'filter 0.3s ease-out';
-		}
+		// Remove filters from body
+		removeFiltersFromBody();
 		
 		// Remove notification
 		const notification = document.getElementById('page-filter-effects-notification');

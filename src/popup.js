@@ -104,33 +104,16 @@ async function applyLoadedValues() {
 			func: (filterString) => {
 				console.log('Applying loaded filter in page:', filterString);
 				
-				// Create or get filter container
-				let filterContainer = document.getElementById('page-filter-effects-container');
-				if (!filterContainer) {
-					// Create a container that will hold all page content
-					filterContainer = document.createElement('div');
-					filterContainer.id = 'page-filter-effects-container';
-					filterContainer.style.cssText = `
-						position: relative;
-						min-height: 100vh;
-						transition: filter 0.3s ease-out;
-					`;
-
-					// Move all body children to the container
-					while (document.body.firstChild) {
-						filterContainer.appendChild(document.body.firstChild);
-					}
-
-					// Add the container to body
-					document.body.appendChild(filterContainer);
-				}
-				
-				// Apply filter to container instead of body
-				filterContainer.style.filter = filterString;
+				// Apply filter directly to body
+				document.body.style.filter = filterString;
+				document.body.style.transition = 'filter 0.3s ease-out';
 				console.log('Loaded filter applied successfully');
 			},
 			args: [filterConfig]
 		});
+		
+		// Update extension icon badge to show effects are active
+		updateExtensionBadge(true);
 		
 		console.log('Loaded values applied successfully');
 		showNotification('Previous filters restored!', 'success');
@@ -341,33 +324,16 @@ async function applyStyle(event = null) {
 			func: (filterString) => {
 				console.log('Applying filter in page:', filterString);
 				
-				// Create or get filter container
-				let filterContainer = document.getElementById('page-filter-effects-container');
-				if (!filterContainer) {
-					// Create a container that will hold all page content
-					filterContainer = document.createElement('div');
-					filterContainer.id = 'page-filter-effects-container';
-					filterContainer.style.cssText = `
-						position: relative;
-						min-height: 100vh;
-						transition: filter 0.3s ease-out;
-					`;
-
-					// Move all body children to the container
-					while (document.body.firstChild) {
-						filterContainer.appendChild(document.body.firstChild);
-					}
-
-					// Add the container to body
-					document.body.appendChild(filterContainer);
-				}
-				
-				// Apply filter to container instead of body
-				filterContainer.style.filter = filterString;
+				// Apply filter directly to body
+				document.body.style.filter = filterString;
+				document.body.style.transition = 'filter 0.3s ease-out';
 				console.log('Filter applied successfully');
 			},
 			args: [filterConfig]
 		});
+		
+		// Update extension icon badge to show effects are active
+		updateExtensionBadge(true);
 		
 		console.log('Script executed successfully');
 		
@@ -433,6 +399,22 @@ function showNotification(message, type = 'error') {
 	}, 3000);
 }
 
+// Update extension icon badge to show filter status
+function updateExtensionBadge(isActive) {
+	if (chrome && chrome.runtime && chrome.runtime.sendMessage) {
+		chrome.runtime.sendMessage({
+			action: 'updateBadge',
+			isActive: isActive
+		}, (response) => {
+			if (chrome.runtime.lastError) {
+				console.log('Could not update badge:', chrome.runtime.lastError.message);
+			} else {
+				console.log('Badge updated successfully');
+			}
+		});
+	}
+}
+
 async function resetStyle() {
 	console.log('Starting reset process');
 	try {
@@ -449,16 +431,16 @@ async function resetStyle() {
 			func: () => {
 				console.log('Resetting filters in page');
 				
-				// Reset filter container
-				const filterContainer = document.getElementById('page-filter-effects-container');
-				if (filterContainer) {
-					filterContainer.style.filter = 'none';
-					filterContainer.style.transition = 'filter 0.3s ease-out';
-				}
+				// Remove filters from body
+				document.body.style.filter = '';
+				document.body.style.transition = '';
 				
 				console.log('Filters reset in page successfully');
 			}
 		});
+		
+		// Update extension icon badge to show effects are inactive
+		updateExtensionBadge(false);
 		
 		console.log('Reset script executed successfully');
 		
